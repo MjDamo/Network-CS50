@@ -20,8 +20,21 @@
         </div>
     {% endif %}
     <div class="container" id="posts">
-    
-    {#TODO#}
-    
+    {% for post in page_posts %}
+        <div id="post">
+        <p><strong>Post By: </strong>
+            <a href="{% url 'profile' user_id=post.postAuther.id  %}" id="post-auther">{{ post.postAuther }}</a>
+        </p>
+        <p><strong>Date: </strong>
+            {{ post.postDate }}
+        </p>
+            {% if post.postAuther == request.user %}
+            <a href="">Edit</a>
+            {% endif %}
+        <div id="content">{{ post.postContent }}</div>
+            <a href=""><i class="fas fa-heart" style="font-size: 20px;color: red"></i>{{ post.postLikes }}</a>
+        </div>
+    {% endfor %}
     </div>
+    {% include 'network/pagination.html' %}
 {% endblock %}

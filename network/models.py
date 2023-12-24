@@ -16,10 +16,13 @@ class Post(models.Model):
     def __str__(self):
         return f"{self.id}, Posted by: {self.postAuther}, Date: {self.postDate}, Likes: {self.postLikes}"
 
-#
-# class Follow(models.Model):
-#     follower = models.ForeignKey(User, on_delete=models.CASCADE, related_name='follower')
-#     following = models.ForeignKey(User, on_delete=models.CASCADE, related_name='following')
-#
-#     def __str__(self):
-#         return f"Follower: {self.follower}, Following: {self.following}"
+
+class Follow(models.Model):
+    follower = models.ForeignKey(User, on_delete=models.CASCADE, related_name='follower')
+    following = models.ForeignKey(User, on_delete=models.CASCADE, related_name='following')
+
+    class Meta:
+        unique_together = ('follower', 'following')
+
+    def __str__(self):
+        return f"Follower: {self.follower}, Following: {self.following}"

@@ -1,0 +1,51 @@
+{% extends "network/layout.html" %}
+
+{% block body %}
+    <div class="container">
+    <h2>{{ name.username }}</h2>
+    <p>Available Posts: {{ all_posts.count }}</p>
+    <p>Follower: {{ followers.count }}</p>
+    <p>Following: {{ following.count }}</p>
+    {% if request.user.is_authenticated %}
+        {% if name != request.user %}
+        <div id="buttons">
+        {% if is_follow %}
+            <p>{{ follow }}</p>
+            <form action="{% url 'unfollow' %}" method="post">
+            {% csrf_token %}
+                <input type="hidden" name="current_user" value="{{ user_profile }}">
+                <button id="unfollow" type="submit">Unfollow</button>
+            </form>
+        {% else %}
+            <p>{{ follow }}</p>
+            <form action="{% url 'unfollow' %}" method="post">
+            {% csrf_token %}
+                <input type="hidden" name="current_user" value="{{ user_profile }}">
+                <button id="follow" type="submit">Follow</button>
+            </form>
+        {% endif %}
+        </div>
+        {% endif %}
+    {% endif %}
+    </div>
+    
+    <h2>{{ name }} Posts</h2>
+    <div class="container" id="posts">
+    {% for post in page_posts %}
+        <div id="post">
+        <p><strong>Post By: </strong>
+            <a href="#" id="post-auther">{{ post.postAuther }}</a>
+        </p>
+        <p><strong>Date: </strong>
+            {{ post.postDate }}
+        </p>
+            {% if post.postAuther == request.user %}
+            <a href="">Edit</a>
+            {% endif %}
+        <div id="content">{{ post.postContent }}</div>
+            <a href=""><i class="fas fa-heart" style="font-size: 20px;color: red"></i>{{ post.postLikes }}</a>
+        </div>
+    {% endfor %}
+    </div>
+    {% include 'network/pagination.html' %}
+{% endblock %}

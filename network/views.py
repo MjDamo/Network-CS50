@@ -9,15 +9,14 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 
-from .models import User, Post
+from .models import User, Post, Follow
 
 
 def index(request):
-    blog = Post.objects.all()
-    blog = blog[::-1]
-    paginator = Paginator(blog, 10)
-    page = request.GET.get('page')
-    page_object = paginator.get_page(page)
+    all_posts = Post.objects.all().order_by('-postDate')
+    paginator = Paginator(all_posts, 10)
+    page_num = request.GET.get('page')
+    page_posts = paginator.get_page(page_num)
     if request.method == 'POST':
         post_content = request.POST['post-content']
 
@@ -28,12 +27,16 @@ def index(request):
             return HttpResponseRedirect(reverse('index'))
         else:
             context = {
-                'massage': 'Please enter a character!!!',
-                'page_object': page_object,
+                'message': 'Please enter a character!!!',
+                'all_posts': all_posts,
+                'page_posts': page_posts,
             }
             return render(request, 'network/index.html', context=context)
     return render(request, "network/index.html",
-                  context={'page_object': page_object})
+                  context={
+                      'all_posts': all_posts,
+                      'page_posts': page_posts,
+                  })
 
 
 def login_view(request):
@@ -86,6 +89,48 @@ def register(request):
         return HttpResponseRedirect(reverse("index"))
     else:
         return render(request, "network/register.html")
+
+
+def profile(request, user_id):
+    user = User.objects.get(pk=user_id)
+    all_posts = Post.objects.filter(postAuther=user).order_by('-postDate')
+    paginator = Paginator(all_posts, 10)
+    page_num = request.GET.get('page')
+    page_posts = paginator.get_page(page_num)
+    followers = Follow.objects.filter(follower=user)
+    following = Follow.objects.filter(following=user)
+
+    try:
+        follow = followers.filter(follower=User.objects.get(pk=request.user.id))
+        if len(follow) != 0:
+            is_follow = True
+        else:
+            is_follow = False
+    except:
+        is_follow = False
+
+    context = {
+        'name': user,
+        'all_posts': all_posts,
+        'page_posts': page_posts,
+        'followers': followers,
+        'following': following,
+        'is_follow': is_follow,
+        'follow': follow,
+    }
+    return render(request, "network/profile.html",
+                  context=context
+                  )
+
+
+@login_required
+def follow(request):
+    return
+
+
+@login_required
+def unfollow(request):
+    return
 
 
 @login_required
