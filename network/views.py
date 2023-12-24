@@ -19,11 +19,11 @@ def index(request):
     page = request.GET.get('page')
     page_object = paginator.get_page(page)
     if request.method == 'POST':
-        content = request.POST['content']
+        post_content = request.POST['post-content']
 
-        if content:
-            user = User.objects.get(id=request.user.id)
-            new_post = Post(author=user, content=content)
+        if post_content:
+            user = User.objects.get(pk=request.user.id)
+            new_post = Post(postAuther=user, postContent=post_content)
             new_post.save()
             return HttpResponseRedirect(reverse('index'))
         else:

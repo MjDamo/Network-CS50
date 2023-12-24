@@ -7,19 +7,19 @@ class User(AbstractUser):
 
 
 class Post(models.Model):
-    postBy = models.ForeignKey(User, on_delete=models.CASCADE, related_name='posted_by')
-    postContent = models.TextField()
+    postAuther = models.ForeignKey(User, on_delete=models.CASCADE, related_name='posted_by')
+    postContent = models.CharField(max_length=250)
     postDate = models.DateTimeField(auto_now_add=True)
     postLikes = models.IntegerField(default=0)
-    likedBy = models.ManyToManyField(User, related_name='liked_by', blank=True)
+    likedBy = models.ManyToManyField(User, blank=True, related_name='liked_by')
 
     def __str__(self):
-        return f"Posted by: {self.postBy}, Date: {self.postDate}, Likes: {self}"
+        return f"{self.id}, Posted by: {self.postAuther}, Date: {self.postDate}, Likes: {self.postLikes}"
 
-
-class Follow(models.Model):
-    follower = models.ForeignKey(User, on_delete=models.CASCADE, related_name='follower')
-    following = models.ForeignKey(User, on_delete=models.CASCADE, related_name='following')
-
-    def __str__(self):
-        return f"Follower: {self.follower}, Following: {self.following}"
+#
+# class Follow(models.Model):
+#     follower = models.ForeignKey(User, on_delete=models.CASCADE, related_name='follower')
+#     following = models.ForeignKey(User, on_delete=models.CASCADE, related_name='following')
+#
+#     def __str__(self):
+#         return f"Follower: {self.follower}, Following: {self.following}"
