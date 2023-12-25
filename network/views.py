@@ -160,21 +160,30 @@ def following(request):
                   )
 
 
-@login_required
-@csrf_exempt
-def post_edit(request, post_id):
+def edit(request, post_id):
     if request.method == "POST":
-        json_info = json.loads(request.body)
-        content = json_info.get('content')
-        if content and content.strip():
-            blog = Post.objects.filter(id=post_id)
-            blog.update(content=content)
-            return JsonResponse(data={'massage': 'updated'}, status=201)
-        return JsonResponse(data={'massage': 'error'}, status=201)
-    if request.user == request.user:
-        return JsonResponse(data={'massage': 'Accepted'}, status=201)
-    return JsonResponse(data={'massage': 'Rejected'}, status=201)
+        data = json.loads(request.body)
+        post = Post.objects.get(pk=post_id)
+        post.postContent = data['content']
+        post.save()
+        return JsonResponse({'success': True, 'data': data['content']})
 
+
+# @login_required
+# @csrf_exempt
+# def post_edit(request, post_id):
+#     if request.method == "POST":
+#         json_info = json.loads(request.body)
+#         content = json_info.get('content')
+#         if content and content.strip():
+#             blog = Post.objects.filter(id=post_id)
+#             blog.update(content=content)
+#             return JsonResponse(data={'massage': 'updated'}, status=201)
+#         return JsonResponse(data={'massage': 'error'}, status=201)
+#     if request.user == request.user:
+#         return JsonResponse(data={'massage': 'Accepted'}, status=201)
+#     return JsonResponse(data={'massage': 'Rejected'}, status=201)
+#
 
 def posts(request):
     blog = Post.objects.all()
