@@ -10,17 +10,15 @@
         {% if name != request.user %}
         <div id="buttons">
         {% if is_follow %}
-            <p>{{ follow }}</p>
             <form action="{% url 'unfollow' %}" method="post">
             {% csrf_token %}
-                <input type="hidden" name="current_user" value="{{ user_profile }}">
+                <input type="hidden" name="c_user" value="{{ name.username }}">
                 <button id="unfollow" type="submit">Unfollow</button>
             </form>
         {% else %}
-            <p>{{ follow }}</p>
-            <form action="{% url 'unfollow' %}" method="post">
+            <form action="{% url 'follow' %}" method="post">
             {% csrf_token %}
-                <input type="hidden" name="current_user" value="{{ user_profile }}">
+                <input type="hidden" name="c_user" value="{{ name.username }}">
                 <button id="follow" type="submit">Follow</button>
             </form>
         {% endif %}

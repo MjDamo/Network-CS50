@@ -97,18 +97,9 @@ def profile(request, user_id):
     paginator = Paginator(all_posts, 10)
     page_num = request.GET.get('page')
     page_posts = paginator.get_page(page_num)
-    followers = Follow.objects.filter(follower=user)
-    following = Follow.objects.filter(following=user)
-
-    try:
-        follow = followers.filter(follower=User.objects.get(pk=request.user.id))
-        if len(follow) != 0:
-            is_follow = True
-        else:
-            is_follow = False
-    except:
-        is_follow = False
-
+    followers = Follow.objects.filter(following=user)
+    following = Follow.objects.filter(follower=user)
+    is_follow = followers.filter(follower=User.objects.get(pk=request.user.id))
     context = {
         'name': user,
         'all_posts': all_posts,
@@ -116,7 +107,6 @@ def profile(request, user_id):
         'followers': followers,
         'following': following,
         'is_follow': is_follow,
-        'follow': follow,
     }
     return render(request, "network/profile.html",
                   context=context
@@ -125,12 +115,24 @@ def profile(request, user_id):
 
 @login_required
 def follow(request):
-    return
+    c_user = request.POST["c_user"]
+    current_user = User.objects.get(pk=request.user.id)
+    c_user_info = User.objects.get(username=c_user)
+    f_user = Follow(follower=current_user, following=c_user_info)
+    f_user.save()
+    user_id = c_user_info.id
+    return HttpResponseRedirect(reverse('profile', kwargs={'user_id': user_id}))
 
 
 @login_required
 def unfollow(request):
-    return
+    c_user = request.POST["c_user"]
+    current_user = User.objects.get(pk=request.user.id)
+    c_user_info = User.objects.get(username=c_user)
+    f_user = Follow.objects.get(follower=current_user, following=c_user_info)
+    f_user.delete()
+    user_id = c_user_info.id
+    return HttpResponseRedirect(reverse('profile', kwargs={'user_id': user_id}))
 
 
 @login_required
