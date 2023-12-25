@@ -1,6 +1,7 @@
 {% extends "network/layout.html" %}
 
 {% block body %}
+
     <h1>All Posts</h1>
     {% if user.is_authenticated %}
         <div class="container">
@@ -29,7 +30,30 @@
             {{ post.postDate }}
         </p>
             {% if post.postAuther == request.user %}
-            <a href="">Edit</a>
+{#            <button id="edit-post">Edit</button>#}
+                <!-- Button trigger modal -->
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop_{{ post.id }}">
+                    Edit
+                </button>
+                
+                <!-- Modal -->
+                <div class="modal fade" id="staticBackdrop_{{ post.id }}" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel_{{ post.id }}" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="staticBackdropLabel_{{ post.id }}">Edit Post</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <textarea name="content" class="form-control" id="textarea_{{ post.id }}" cols="30" rows="4">{{ post.postContent }}</textarea>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button onclick="submitChange({{ post.id }})" type="button" class="btn btn-primary">Save Change</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             {% endif %}
         <div id="content">{{ post.postContent }}</div>
             <a href=""><i class="fas fa-heart" style="font-size: 20px;color: red"></i>{{ post.postLikes }}</a>
@@ -37,4 +61,7 @@
     {% endfor %}
     </div>
     {% include 'network/pagination.html' %}
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    <script src="../../static/network/index.js"></script>
 {% endblock %}
