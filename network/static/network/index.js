@@ -6,7 +6,9 @@ function getCookie(name) {
 }
 
 function submitChange(id) {
-    const newContent = document.getElementById(`textarea_${id}`).value
+    const newContent = document.getElementById(`textarea_${id}`).value;
+    const content = document.getElementById(`content_${id}`);
+    const modal = document.getElementById(`staticBackdrop_${id}`);
     fetch(`/edit/${id}`,{
         method: 'POST',
         headers: {
@@ -18,7 +20,17 @@ function submitChange(id) {
         })
     })
         .then(response => response.json())
+        .then(result => {
+            content.innerHTML = result.data;
+            modal.classList.remove('show');
+            modal.setAttribute('aria-hidden', 'true');
+            modal.setAttribute('style', 'display: none');
 
+            const back = document.querySelectorAll('.modal-backdrop');
+            for (let i = 0; i < back.length; i++){
+                document.body.removeChild(back[i]);
+            }
+        })
 }
 
 

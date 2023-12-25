@@ -55,7 +55,7 @@
                     </div>
                 </div>
             {% endif %}
-        <div id="content">{{ post.postContent }}</div>
+        <div id="content_{{ post.id }}">{{ post.postContent }}</div>
             <a href=""><i class="fas fa-heart" style="font-size: 20px;color: red"></i>{{ post.postLikes }}</a>
         </div>
     {% endfor %}
