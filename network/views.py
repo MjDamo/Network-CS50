@@ -136,6 +136,31 @@ def unfollow(request):
 
 
 @login_required
+def following(request):
+    user = User.objects.get(pk=request.user.id)
+    all_posts = Post.objects.all().order_by('-postDate')
+    all_following = Follow.objects.filter(follower=user)
+    following_posts = []
+    for post in all_posts:
+        for p in all_following:
+            if p.following == post.postAuther:
+                following_posts.append(post)
+
+    paginator = Paginator(following_posts, 10)
+    page_num = request.GET.get('page')
+    page_posts = paginator.get_page(page_num)
+
+    context = {
+        'name': user,
+        'all_posts': all_posts,
+        'page_posts': page_posts,
+    }
+    return render(request, "network/following.html",
+                  context=context
+                  )
+
+
+@login_required
 @csrf_exempt
 def post_edit(request, post_id):
     if request.method == "POST":
