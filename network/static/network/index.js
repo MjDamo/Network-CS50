@@ -34,3 +34,27 @@ function submitChange(id) {
 }
 
 
+function likeUnlike(post_id, user_likes) {
+    const likeUnlikeBtn = document.getElementById(`${post_id}`);
+    likeUnlikeBtn.classList.remove('bi-heart-fill')
+    likeUnlikeBtn.classList.remove('bi-heart')
+    let likeFlag = false;
+    if (user_likes.indexOf(post_id) >= 0) {
+        likeFlag = true
+    }
+    if (likeFlag){
+        fetch(`/unlike_post/${post_id}`)
+            .then(response => response.json)
+            .then(result => {
+                likeUnlikeBtn.add('bi-heart')
+            })
+    } else {
+        fetch(`/like_post/${post_id}`)
+            .then(response => response.json)
+            .then(result => {
+                likeUnlikeBtn.add('bi-heart-fill')
+            })
+    }
+    likeFlag = !likeFlag
+}
+

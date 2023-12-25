@@ -9,7 +9,7 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 
-from .models import User, Post, Follow
+from .models import User, Post, Follow, PostLike
 
 
 def index(request):
@@ -17,6 +17,15 @@ def index(request):
     paginator = Paginator(all_posts, 10)
     page_num = request.GET.get('page')
     page_posts = paginator.get_page(page_num)
+
+    user_likes = []
+    all_likes = PostLike.objects.all()
+    try:
+        for like in all_likes:
+            if like.likedBy == request.user:
+                user_likes.append(like.likedPost.id)
+    except:
+        user_likes = []
     if request.method == 'POST':
         post_content = request.POST['post-content']
 
@@ -30,13 +39,37 @@ def index(request):
                 'message': 'Please enter a character!!!',
                 'all_posts': all_posts,
                 'page_posts': page_posts,
+                'user_likes': user_likes,
             }
             return render(request, 'network/index.html', context=context)
     return render(request, "network/index.html",
                   context={
                       'all_posts': all_posts,
                       'page_posts': page_posts,
+                      'user_likes': user_likes,
                   })
+
+
+@login_required
+def like_post(request, post_id):
+    post = Post.objects.get(pk=post_id)
+    user = User.objects.get(pk=request.user.id)
+    like = PostLike(likedBy=user, likedPost=post)
+    like.save()
+    post.postLikes += 1
+    post.save()
+    return JsonResponse({'liked': True})
+
+
+@login_required
+def unlike_post(request, post_id):
+    post = Post.objects.get(pk=post_id)
+    user = User.objects.get(pk=request.user.id)
+    like = PostLike.objects.filter(likedBy=user, likedPost=post)
+    like.delete()
+    post.postLikes -= 1
+    post.save()
+    return JsonResponse({'unliked': True})
 
 
 def login_view(request):
@@ -168,70 +201,69 @@ def edit(request, post_id):
         post.save()
         return JsonResponse({'success': True, 'data': data['content']})
 
-
-def posts(request):
-    blog = Post.objects.all()
-    blog = blog[::-1]
-    paginator = Paginator(blog, 10)
-    page = request.GET.get('page')
-    page_obj = paginator.get_page(page)
-    context = {
-        'page_obj': page_obj,
-    }
-    return render(request, 'network/posts.html', context=context)
-
-
-@login_required
-def follow_posts(request):
-    author = request.user.username
-    user = User.objects.get(username=author)
-    follow = user.following.all()
-    blog = []
-    for person in follow:
-        posts = person.following.posted_by.all()
-        for post in posts:
-            blog.insert(0, post)
-    if blog:
-        blog = sorted(blog, key=lambda post: post.postBy, reverse=True)
-        paginator = Paginator(blog, 10)
-        page = request.GET.get('page')
-        page_obj = paginator.get_page(page)
-        context = {'page_obj': page_obj}
-        return render(request, "network/posts.html", context=context)
-    context = {
-        'Message': 'You are not following any one, please follow other to see their posts!!!'
-    }
-    return render(request, 'network/posts.html', context=context)
+# def posts(request):
+#     blog = Post.objects.all()
+#     blog = blog[::-1]
+#     paginator = Paginator(blog, 10)
+#     page = request.GET.get('page')
+#     page_obj = paginator.get_page(page)
+#     context = {
+#         'page_obj': page_obj,
+#     }
+#     return render(request, 'network/posts.html', context=context)
 
 
-@login_required
-def like_posts(request, post_id=None):
-    try:
-        post = Post.objects.get(pk=post_id)
-        author = User.objects.get(pk=request.user.id)
-        liked_by = post.liked.all()
-    except:
-        return JsonResponse({
-            'error': 'nothing here!!'
-        }, status=201)
-    flag = True
-    for liked in liked_by:
-        if liked.author == author:
-            post.liked.remove(author)
-            if post.likedBy >= 1:
-                post.likedBy -= 1
-                post.save()
-                flag = False
-                return JsonResponse({
-                    'likeCounter': post.likedBy,
-                }, status=200)
-    if flag:
-        post.liked.add(author)
-        post.likedBy += 1
-        post.save()
-        return JsonResponse({
-            'likeCounter': post.likedBy
-        }, status=200)
-    return JsonResponse({
-        'error': 'nothing there!!'
-    })
+# @login_required
+# def follow_posts(request):
+#     author = request.user.username
+#     user = User.objects.get(username=author)
+#     follow = user.following.all()
+#     blog = []
+#     for person in follow:
+#         posts = person.following.posted_by.all()
+#         for post in posts:
+#             blog.insert(0, post)
+#     if blog:
+#         blog = sorted(blog, key=lambda post: post.postBy, reverse=True)
+#         paginator = Paginator(blog, 10)
+#         page = request.GET.get('page')
+#         page_obj = paginator.get_page(page)
+#         context = {'page_obj': page_obj}
+#         return render(request, "network/posts.html", context=context)
+#     context = {
+#         'Message': 'You are not following any one, please follow other to see their posts!!!'
+#     }
+#     return render(request, 'network/posts.html', context=context)
+#
+
+# @login_required
+# def like_posts(request, post_id=None):
+#     try:
+#         post = Post.objects.get(pk=post_id)
+#         author = User.objects.get(pk=request.user.id)
+#         liked_by = post.liked.all()
+#     except:
+#         return JsonResponse({
+#             'error': 'nothing here!!'
+#         }, status=201)
+#     flag = True
+#     for liked in liked_by:
+#         if liked.author == author:
+#             post.liked.remove(author)
+#             if post.likedBy >= 1:
+#                 post.likedBy -= 1
+#                 post.save()
+#                 flag = False
+#                 return JsonResponse({
+#                     'likeCounter': post.likedBy,
+#                 }, status=200)
+#     if flag:
+#         post.liked.add(author)
+#         post.likedBy += 1
+#         post.save()
+#         return JsonResponse({
+#             'likeCounter': post.likedBy
+#         }, status=200)
+#     return JsonResponse({
+#         'error': 'nothing there!!'
+#     })
