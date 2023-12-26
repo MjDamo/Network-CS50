@@ -133,6 +133,14 @@ def profile(request, user_id):
     followers = Follow.objects.filter(following=user)
     following = Follow.objects.filter(follower=user)
     is_follow = followers.filter(follower=User.objects.get(pk=request.user.id))
+    user_likes = []
+    all_likes = PostLike.objects.all()
+    try:
+        for like in all_likes:
+            if like.likedBy == request.user:
+                user_likes.append(like.likedPost.id)
+    except:
+        user_likes = []
     context = {
         'name': user,
         'all_posts': all_posts,
@@ -140,6 +148,7 @@ def profile(request, user_id):
         'followers': followers,
         'following': following,
         'is_follow': is_follow,
+        'user_likes': user_likes,
     }
     return render(request, "network/profile.html",
                   context=context
@@ -183,10 +192,20 @@ def following(request):
     page_num = request.GET.get('page')
     page_posts = paginator.get_page(page_num)
 
+    user_likes = []
+    all_likes = PostLike.objects.all()
+    try:
+        for like in all_likes:
+            if like.likedBy == request.user:
+                user_likes.append(like.likedPost.id)
+    except:
+        user_likes = []
+
     context = {
         'name': user,
         'all_posts': all_posts,
         'page_posts': page_posts,
+        'user_likes': user_likes,
     }
     return render(request, "network/following.html",
                   context=context
@@ -200,70 +219,3 @@ def edit(request, post_id):
         post.postContent = data['content']
         post.save()
         return JsonResponse({'success': True, 'data': data['content']})
-
-# def posts(request):
-#     blog = Post.objects.all()
-#     blog = blog[::-1]
-#     paginator = Paginator(blog, 10)
-#     page = request.GET.get('page')
-#     page_obj = paginator.get_page(page)
-#     context = {
-#         'page_obj': page_obj,
-#     }
-#     return render(request, 'network/posts.html', context=context)
-
-
-# @login_required
-# def follow_posts(request):
-#     author = request.user.username
-#     user = User.objects.get(username=author)
-#     follow = user.following.all()
-#     blog = []
-#     for person in follow:
-#         posts = person.following.posted_by.all()
-#         for post in posts:
-#             blog.insert(0, post)
-#     if blog:
-#         blog = sorted(blog, key=lambda post: post.postBy, reverse=True)
-#         paginator = Paginator(blog, 10)
-#         page = request.GET.get('page')
-#         page_obj = paginator.get_page(page)
-#         context = {'page_obj': page_obj}
-#         return render(request, "network/posts.html", context=context)
-#     context = {
-#         'Message': 'You are not following any one, please follow other to see their posts!!!'
-#     }
-#     return render(request, 'network/posts.html', context=context)
-#
-
-# @login_required
-# def like_posts(request, post_id=None):
-#     try:
-#         post = Post.objects.get(pk=post_id)
-#         author = User.objects.get(pk=request.user.id)
-#         liked_by = post.liked.all()
-#     except:
-#         return JsonResponse({
-#             'error': 'nothing here!!'
-#         }, status=201)
-#     flag = True
-#     for liked in liked_by:
-#         if liked.author == author:
-#             post.liked.remove(author)
-#             if post.likedBy >= 1:
-#                 post.likedBy -= 1
-#                 post.save()
-#                 flag = False
-#                 return JsonResponse({
-#                     'likeCounter': post.likedBy,
-#                 }, status=200)
-#     if flag:
-#         post.liked.add(author)
-#         post.likedBy += 1
-#         post.save()
-#         return JsonResponse({
-#             'likeCounter': post.likedBy
-#         }, status=200)
-#     return JsonResponse({
-#         'error': 'nothing there!!'
-#     })
